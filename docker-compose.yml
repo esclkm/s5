@@ -1,0 +1,58 @@
+version: '3.7'
+services:
+  # web:
+  #   restart: "no"
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile-frontend
+  #   volumes:
+  #     - './web:/app/web'
+  #   env_file: .env
+  backend:
+    restart: always
+    build:
+      context: .
+    expose:
+      - '8000'
+    ports:
+      - '8000:8000'
+    links:
+      - 'mariadb:mariadb'
+    depends_on:
+      - mariadb
+    volumes:
+      - '.:/app'
+#      - ./php_ini:/usr/local/etc/php
+      - /app/vendor
+#      - ./vendor/composer:/app/vendor/composer
+#      - ./vendor/autoload.php:/app/vendor
+    env_file: .env
+    command: sh /app/entrypoint.sh
+  mariadb:
+    restart: always
+    image: 'mariadb:10.1.44-bionic'
+    command: --default-authentication-plugin=mysql_native_password
+    env_file: .env
+    expose:
+      - '8000'
+    ports:
+      - '3306:3306'
+    volumes:
+      - 'db_volume:/var/lib/mysql'
+      - './db:/docker-entrypoint-initdb.d'
+  phpmyadmin-mariadb:
+    image: phpmyadmin/phpmyadmin:4.8.5
+    restart: always
+    depends_on:
+      - mariadb
+    environment:
+      - PMA_HOST=mariadb
+      - PMA_PORT=3306
+      - PMA_USER=root
+      - PMA_PASSWORD=root
+    ports:
+      - "3001:80"
+
+volumes:
+  db_volume:
+    external: true

@@ -1,0 +1,14 @@
+FROM node:10.20.0-alpine3.11
+MAINTAINER Pavel Mikulik <esclkm@gmail.com>
+
+RUN mkdir /app && chmod 1777 /app
+
+WORKDIR /app
+
+COPY package.json /app/
+COPY ./ /app/
+
+RUN npm install
+RUN npm rebuild node-sass
+RUN npm run-script build-css && npm run-script build-react
+CMD npm run-script build-css && npm run-script build-react
